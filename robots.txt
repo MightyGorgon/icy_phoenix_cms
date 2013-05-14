@@ -1,0 +1,33 @@
+Sitemap: http://www.icyphoenix.com/sitemap.php
+
+User-agent: Yahoo! Slurp
+Crawl-delay: 240
+
+#User-agent: BOTNAME
+#Disallow: /
+
+# All Bots!
+User-agent: *
+Disallow: /adm/
+Disallow: /blocks/
+Disallow: /cache/
+Disallow: /downloads/
+Disallow: /files/
+Disallow: /images/
+Disallow: /includes/
+Disallow: /language/
+Disallow: /logs/
+Disallow: /plugins/
+Disallow: /templates/
+Disallow: /cms.php
+Disallow: /cms_menu.php
+Disallow: /common.php
+Disallow: /config.php
+Disallow: /groupcp.php
+Disallow: /login.php
+Disallow: /memberlist.php
+Disallow: /modcp.php
+Disallow: /posting.php
+Disallow: /search.php
+Disallow: /upload.php
+

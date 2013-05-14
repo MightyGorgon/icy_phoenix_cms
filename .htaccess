@@ -1,0 +1,53 @@
+#php_flag register_globals 0
+#php_flag register_globals off
+#php_flag magic_quotes_gpc on
+#php_value memory_limit 16M
+#Options +FollowSymlinks
+
+# Disable the files listing feature
+#Options All -Indexes
+
+<Files "config.php">
+Order Allow,Deny
+Deny from All
+</Files>
+
+<Files "common.php">
+Order Allow,Deny
+Deny from All
+</Files>
+
+### MOD REWRITE ###
+
+<IfModule mod_rewrite.c>
+
+RewriteEngine On
+#This may cause issues with subdirs and so it is not enabled by default.
+#RewriteBase /
+
+#Make sure the whole site goes to www.mysite.com instead of mysite.com. This is good for the search engines
+#Edit and uncomment the below lines for your own site.
+#Make sure to replace icyphoenix.com with your site address.
+#RewriteCond %{HTTP_HOST} ^icyphoenix.com [NC]
+#RewriteRule (.*) http://www.icyphoenix.com/$1 [R=301,L]
+
+</IfModule>
+
+##################################
+#      Errors Pages - BEGIN      #
+##################################
+##################################
+# Decomment these lines to enable error document management.
+# You can add absolute path if you want always the correct path being parsed.
+# Something like:
+# ErrorDocument 400 http://www.icyphoenix.com/errors.php?code=400
+##################################
+ErrorDocument 400 /errors.php?code=400
+ErrorDocument 401 /errors.php?code=401
+ErrorDocument 403 /errors.php?code=403
+ErrorDocument 404 /errors.php?code=404
+ErrorDocument 500 /errors.php?code=500
+##################################
+#       Errors Pages - END       #
+##################################
+
