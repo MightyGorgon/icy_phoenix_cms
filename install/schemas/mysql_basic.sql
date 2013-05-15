@@ -123,20 +123,13 @@ INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) V
 INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (12, 'ghright', 'gr', 0);
 INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (13, 'left', 'l', 1);
 INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (14, 'center', 'c', 1);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (15, 'right', 'r', 1);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (16, 'xsnews', 'x', 1);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (17, 'nav', 'n', 1);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (18, 'centerbottom', 'b', 1);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (19, 'left', 'l', 2);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (20, 'center', 'c', 2);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (21, 'xsnews', 'x', 2);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (22, 'nav', 'n', 2);
-INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (23, 'centerbottom', 'b', 2);
+INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (15, 'nav', 'n', 1);
+INSERT INTO `phpbb_cms_block_position` (`bpid`, `pkey`, `bposition`, `layout`) VALUES (16, 'centerbottom', 'b', 1);
 
 ## `phpbb_cms_block_settings`
 ##
 
-INSERT INTO `phpbb_cms_block_settings` (`bs_id`, `user_id`, `name`, `content`, `blockfile`, `view`, `type`, `groups`, `locked`) VALUES(1, 0, 'Nav Links', '', 'nav_links', 0, 0, '', 1);
+INSERT INTO `phpbb_cms_block_settings` (`bs_id`, `user_id`, `name`, `content`, `blockfile`, `view`, `type`, `groups`, `locked`) VALUES(1, 0, 'Welcome', 'Welcome To <b>Icy Phoenix</b>', '', 0, 0, '', 1);
 INSERT INTO `phpbb_cms_block_settings` (`bs_id`, `user_id`, `name`, `content`, `blockfile`, `view`, `type`, `groups`, `locked`) VALUES(2, 0, 'Welcome', '<table class="empty-table" width="100%" cellspacing="0" cellpadding="0" border="0">\r\n	<tr>\r\n		<td width="5%"><img src="images/icy_phoenix_small.png" alt="" /></td>\r\n		<td width="90%" align="center"><div class="post-text">Welcome To <b>Icy Phoenix</b></div><br /><br /></td>\r\n		<td width="5%"><img src="images/icy_phoenix_small_l.png" alt="" /></td>\r\n	</tr>\r\n</table>', '', 0, 0, '', 1);
 
 ## `phpbb_cms_block_variable`
@@ -149,8 +142,8 @@ INSERT INTO `phpbb_cms_block_variable` (`bvid`, `bid`, `label`, `sub_label`, `co
 ## `phpbb_cms_blocks`
 ##
 
-INSERT INTO `phpbb_cms_blocks` (`bid`, `bs_id`, `block_cms_id`, `layout`, `layout_special`, `title`, `bposition`, `weight`, `active`, `border`, `titlebar`, `background`, `local`) VALUES(1, 1, 0, 1, 0, 'Nav Links', 'l', 1, 1, 0, 0, 0, 0);
-INSERT INTO `phpbb_cms_blocks` (`bid`, `bs_id`, `block_cms_id`, `layout`, `layout_special`, `title`, `bposition`, `weight`, `active`, `border`, `titlebar`, `background`, `local`) VALUES(2, 2, 0, 1, 0, 'Welcome', 'c', 2, 1, 1, 1, 1, 1);
+INSERT INTO `phpbb_cms_blocks` (`bid`, `bs_id`, `block_cms_id`, `layout`, `layout_special`, `title`, `bposition`, `weight`, `active`, `border`, `titlebar`, `background`, `local`) VALUES(1, 1, 0, 1, 0, 'Welcome', 'l', 1, 1, 1, 1, 1, 1);
+INSERT INTO `phpbb_cms_blocks` (`bid`, `bs_id`, `block_cms_id`, `layout`, `layout_special`, `title`, `bposition`, `weight`, `active`, `border`, `titlebar`, `background`, `local`) VALUES(2, 2, 0, 1, 0, 'Welcome', 'c', 1, 1, 1, 1, 1, 1);
 
 ## `phpbb_cms_config`
 ##

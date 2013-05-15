@@ -39,9 +39,7 @@
 <div class="top-menu">
 	<div id="horiz-menu">
 		<ul class="menutop">
-			<li>{U_ACP}</li>
 			<li><a href="{FULL_SITE_PATH}{U_PORTAL}" accesskey="h">{L_HOME}</a></li>
-			<li><a href="{FULL_SITE_PATH}{U_INDEX}">{L_INDEX}</a></li>
 			<!-- IF S_LOGGED_IN -->
 			<li><a href="{FULL_SITE_PATH}{U_PROFILE}">{L_PROFILE}</a></li>
 			<!-- ENDIF -->

@@ -59,7 +59,6 @@ include(IP_ROOT_PATH . 'includes/class_form.' . PHP_EXT);
 $class_form = new class_form();
 
 include_once(IP_ROOT_PATH . 'includes/functions_selects.' . PHP_EXT);
-include_once(IP_ROOT_PATH . 'includes/functions_post.' . PHP_EXT);
 include_once(IP_ROOT_PATH . 'includes/bbcode.' . PHP_EXT);
 
 $page_title = $lang['CMS_TITLE'];

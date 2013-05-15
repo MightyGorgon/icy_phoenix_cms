@@ -3776,6 +3776,171 @@ function build_im_link($im_type, $user_data, $im_icon_type = false, $im_img = fa
 }
 
 /*
+* Fill smiley templates (or just the variables) with smileys
+* Either in a window or inline
+*/
+function generate_smilies($mode)
+{
+	global $db, $cache, $config, $auth, $user, $lang, $template, $images, $theme;
+	global $starttime, $gen_simple_header;
+
+	$inline_columns = $config['smilie_columns'];
+	$inline_rows = $config['smilie_rows'];
+	$window_columns = $config['smilie_window_columns'];
+	$window_rows = $config['smilie_window_rows'];
+	$smilies_per_page = $window_columns * $window_rows;
+	$start = request_var('start', 0);
+	$start = ($start < 0) ? 0 : $start;
+	$smilies_per_page = request_var('smilies_per_page', $smilies_per_page);
+
+	if ($mode == 'window')
+	{
+		// Start session management
+		$user->session_begin();
+		$auth->acl($user->data);
+		$user->setup();
+		// End session management
+
+		$gen_simple_header = true;
+
+		$meta_content['page_title'] = $lang['Emoticons'];
+		$meta_content['description'] = '';
+		$meta_content['keywords'] = '';
+		page_header($meta_content['page_title'], true);
+
+		$template->set_filenames(array('smiliesbody' => 'posting_smilies.tpl'));
+	}
+
+	// Smilies Order Replace
+	// ORDER BY smilies_id";
+	$sql = "SELECT emoticon, code, smile_url FROM " . SMILIES_TABLE . " ORDER BY smilies_order";
+	$db->sql_return_on_error(true);
+	$result = $db->sql_query($sql, 0, 'smileys_');
+	$db->sql_return_on_error(false);
+	if ($result !== false)
+	{
+		$num_smilies = 0;
+		$rowset = array();
+		$rowset2 = array();
+		while($row = $db->sql_fetchrow($result))
+		{
+			if(empty($rowset2[$row['smile_url']]))
+			{
+				$rowset2[$row['smile_url']] = $row['smile_url'];
+				$rowset[$num_smilies]['smile_url'] = $row['smile_url'];
+				$rowset[$num_smilies]['code'] = str_replace("'", "\\'", str_replace('\\', '\\\\', $row['code']));
+				$rowset[$num_smilies]['emoticon'] = $row['emoticon'];
+				$num_smilies++;
+			}
+		}
+		unset($rowset2);
+		$db->sql_freeresult($result);
+
+		if ($num_smilies)
+		{
+			if(($mode == 'inline') || ($smilies_per_page == 0))
+			{
+				$per_page = $num_smilies;
+				$smiley_start = 0;
+				$smiley_stop = $num_smilies;
+			}
+			else
+			{
+				$per_page = ($smilies_per_page > $num_smilies) ? $num_smilies : $smilies_per_page;
+				$page_num = ($start <= 0) ? 1 : ($start / $per_page) + 1;
+				$smiley_start = ($per_page * $page_num) - $per_page;
+				$smiley_stop = (($per_page * $page_num) > $num_smilies) ? $num_smilies : $smiley_start + $per_page;
+			}
+			$smilies_count = ($mode == 'inline') ? min((($inline_columns * $inline_rows) - 1), $num_smilies) : $num_smilies;
+			$smilies_split_row = ($mode == 'inline') ? ($inline_columns - 1) : ($window_columns - 1);
+
+			$s_colspan = 0;
+			$row = 0;
+			$col = 0;
+
+			$host = extract_current_hostname();
+
+			for($i = $smiley_start; $i < $smiley_stop; $i++)
+			{
+				if (!$col)
+				{
+					$template->assign_block_vars('smilies_row', array());
+				}
+				$template->assign_block_vars('smilies_row.smilies_col', array(
+					'SMILEY_CODE' => $rowset[$i]['code'],
+					'SMILEY_IMG' => 'http://' . $host . $config['script_path'] . $config['smilies_path'] . '/' . $rowset[$i]['smile_url'],
+					'SMILEY_DESC' => $rowset[$i]['emoticon']
+					)
+				);
+
+				$s_colspan = max($s_colspan, $col + 1);
+
+				if ($col == $smilies_split_row)
+				{
+					if((($mode == 'inline') && ($row == $inline_rows - 1)) || (empty($inline) && ($row == $per_page)))
+					{
+						break;
+					}
+					$col = 0;
+					$row++;
+				}
+				else
+				{
+					$col++;
+				}
+			}
+
+			if ($mode == 'inline' && $num_smilies > $inline_rows * $inline_columns)
+			{
+				$template->assign_vars(array(
+					'L_MORE_SMILIES' => $lang['More_emoticons'],
+					'U_MORE_SMILIES' => append_sid('posting.' . PHP_EXT . '?mode=smilies')
+					)
+				);
+				$template->assign_block_vars('switch_smilies_extra', array());
+			}
+
+			$select_smileys_pp = '<select name="smilies_per_page" onchange="SetSmileysPerPage();" class="gensmall">';
+			$select_smileys_pp .= '<option value="' . ($window_columns * $window_rows) . '"' . (($smilies_per_page == ($window_columns * $window_rows)) ? ' selected="selected"' : '') . '>' . ($window_columns * $window_rows) . '</option>';
+			$select_smileys_pp .= '<option value="50"' . (($smilies_per_page == 50) ? ' selected="selected"' : '') . '>50</option>';
+			$select_smileys_pp .= '<option value="100"' . (($smilies_per_page == 100) ? ' selected="selected"' : '') . '>100</option>';
+			$select_smileys_pp .= '<option value="150"' . (($smilies_per_page == 150) ? ' selected="selected"' : '') . '>150</option>';
+			$select_smileys_pp .= '<option value="250"' . (($smilies_per_page == 250) ? ' selected="selected"' : '') . '>250</option>';
+			$select_smileys_pp .= '<option value="500"' . (($smilies_per_page == 500) ? ' selected="selected"' : '') . '>500</option>';
+			$select_smileys_pp .= '<option value="1000"' . (($smilies_per_page == 1000) ? ' selected="selected"' : '') . '>1000</option>';
+			$select_smileys_pp .= '<option value="5000"' . (($smilies_per_page == 5000) ? ' selected="selected"' : '') . '>5000</option>';
+			$select_smileys_pp .= '</select>';
+
+			$template->assign_vars(array(
+				'L_EMOTICONS' => $lang['Emoticons'],
+				'L_CLOSE_WINDOW' => $lang['Close_window'],
+				'L_SMILEYS_PER_PAGE' => $lang['Smileys_Per_Page'],
+
+				'REQUEST_URI' => append_sid('posting.' . PHP_EXT . '?mode=smilies'),
+				'U_SMILEYS_GALLERY' => append_sid('smileys.' . PHP_EXT),
+
+				'DEFAULT_SMILEYS_PER_PAGE' => $window_columns * $window_rows,
+				'SELECT_SMILEYS_PP' => $select_smileys_pp,
+				'PAGINATION' => generate_pagination('posting.' . PHP_EXT . '?mode=smilies', $num_smilies, $per_page, $start, false),
+				'S_SMILIES_COLSPAN' => $s_colspan
+				)
+			);
+		}
+	}
+
+	$template->assign_vars(array(
+		'DISPLAY_MODE' => ($mode == 'window') ? 'window' : 'inline',
+		)
+	);
+
+	if ($mode == 'window')
+	{
+		$template->pparse('smiliesbody');
+		page_footer(true, '', true);
+	}
+}
+
+/*
 * Get AD
 */
 function get_ad($ad_position)
@@ -4288,145 +4453,10 @@ function page_header($title = '', $parse_template = false)
 	}
 	else
 	{
-		if (!empty($user->data['user_popup_pm']))
-		{
-			$template->assign_block_vars('switch_enable_pm_popup', array());
-		}
-
 		$u_login_logout = CMS_PAGE_LOGIN . '?logout=true&amp;sid=' . $user->data['session_id'];
 		$l_login_logout = $lang['Logout'] . ' (' . $user->data['username'] . ')';
 		$l_login_logout2 = $lang['Logout'];
 		$s_last_visit = create_date($config['default_dateformat'], $user->data['user_lastvisit'], $config['board_timezone']);
-
-		// DOWNLOADS ADV - BEGIN
-		//@include(IP_ROOT_PATH . PLUGINS_PATH . $config['plugins']['downloads']['dir'] . 'includes/dl_page_header_inc.' . PHP_EXT);
-		// DOWNLOADS ADV - END
-
-		// Obtain number of new private messages
-		if (empty($gen_simple_header))
-		{
-
-			// Birthday - BEGIN
-			// see if user has or have had birthday, also see if greeting are enabled
-			if (($user->data['user_birthday'] != 999999) && $config['birthday_greeting'] && (create_date('Ymd', time(), $config['board_timezone']) >= $user->data['user_next_birthday_greeting'] . realdate('md', $user->data['user_birthday'])))
-			{
-				if (!function_exists('birthday_pm_send'))
-				{
-					include_once(IP_ROOT_PATH . 'includes/functions_users.' . PHP_EXT);
-				}
-				birthday_pm_send();
-			}
-			// Birthday - END
-
-			if ($user->data['user_profile_view'] && $user->data['user_profile_view_popup'])
-			{
-				$template->assign_vars(array(
-					'PROFILE_VIEW' => true,
-					'U_PROFILE_VIEW' => append_sid('profile_view_popup.' . PHP_EXT),
-					)
-				);
-			}
-
-			if ($user->data['user_new_privmsg'] && !$config['privmsg_disable'])
-			{
-				$new_pm_switch = true;
-				$l_message_new = ($user->data['user_new_privmsg'] == 1) ? $lang['New_pm'] : $lang['New_pms'];
-				$l_privmsgs_text = sprintf($l_message_new, $user->data['user_new_privmsg']);
-
-				if ($user->data['user_last_privmsg'] > $user->data['user_lastvisit'])
-				{
-					$sql = "UPDATE " . USERS_TABLE . "
-						SET user_last_privmsg = '" . $user->data['user_lastvisit'] . "'
-						WHERE user_id = " . $user->data['user_id'];
-					$db->sql_query($sql);
-					$s_privmsg_new = 1;
-					$icon_pm = $images['pm_new_msg'];
-				}
-				else
-				{
-					$s_privmsg_new = 0;
-					$icon_pm = $images['pm_new_msg'];
-				}
-			}
-			else
-			{
-				$l_privmsgs_text = $lang['No_new_pm'];
-				$s_privmsg_new = 0;
-				$icon_pm = $images['pm_no_new_msg'];
-			}
-
-			$icon_private_chat = $images['private_chat'];
-			if (!empty($user->data['user_private_chat_alert']))
-			{
-				$new_private_chat_switch = true;
-				$icon_private_chat = $images['private_chat_alert'];
-
-				$ajax_chat_page = !empty($config['ajax_chat_link_type']) ? CMS_PAGE_AJAX_CHAT : CMS_PAGE_AJAX_SHOUTBOX;
-				$ajax_chat_room = 'chat_room=' . $user->data['user_private_chat_alert'];
-				$ajax_chat_link = append_sid($ajax_chat_page . '?' . $ajax_chat_room);
-				$ajax_chat_ref = !empty($config['ajax_chat_link_type']) ? ($ajax_chat_link . '" target="_chat') : ('#" onclick="window.open(\'' . $ajax_chat_link . '\', \'_chat\', \'width=720,height=600,resizable=yes\'); $(\'#shoutbox_pvt_alert\').css(\'display\', \'none\'); return false;');
-				$u_private_chat = $ajax_chat_ref;
-			}
-
-			if ($user->data['user_unread_privmsg'])
-			{
-				$l_message_unread = ($user->data['user_unread_privmsg'] == 1) ? $lang['Unread_pm'] : $lang['Unread_pms'];
-				$l_privmsgs_text_unread = sprintf($l_message_unread, $user->data['user_unread_privmsg']);
-			}
-			else
-			{
-				$l_privmsgs_text_unread = $lang['No_unread_pm'];
-			}
-		}
-		else
-		{
-			$icon_pm = $images['pm_no_new_msg'];
-			$l_privmsgs_text = $lang['Login_check_pm'];
-			$l_privmsgs_text_unread = '';
-			$s_privmsg_new = 0;
-		}
-
-		// We don't want this SQL being too expensive... so we will allow the number of new messages only for some pages... (you can add here other pages if you wish!)
-		// We will also allow the number of new messages only for users which log on frequently
-		$new_messages_counter_pages_array = array(CMS_PAGE_FORUM, CMS_PAGE_VIEWFORUM);
-		$display_counter = ($config['enable_new_messages_number'] && !$user->data['is_bot'] && in_array($page_url['basename'], $new_messages_counter_pages_array) && ($user->data['user_lastvisit'] > (time() - (LAST_LOGIN_DAYS_NEW_POSTS_RESET * 60 * 60 * 24)))) ? true : false;
-		if ($display_counter)
-		{
-			$auth_forum = '';
-			if ($user->data['user_level'] != ADMIN)
-			{
-				if (!function_exists('auth_forum_read'))
-				{
-					include_once(IP_ROOT_PATH . 'includes/functions_upi2db.' . PHP_EXT);
-				}
-				$user->data['auth_forum_id'] = isset($user->data['auth_forum_id']) ? $user->data['auth_forum_id'] : auth_forum_read($user->data);
-				$auth_forum = (!empty($user->data['auth_forum_id'])) ? ' AND forum_id IN (' . $user->data['auth_forum_id'] . ') ' : '';
-			}
-
-			$sql = "SELECT COUNT(post_id) as total
-				FROM " . POSTS_TABLE . "
-				WHERE post_time >= " . $user->data['user_lastvisit'] . $auth_forum . "
-				AND poster_id != " . $user->data['user_id'];
-			$db->sql_return_on_error(true);
-			$result = $db->sql_query($sql);
-			$db->sql_return_on_error(false);
-			if ($result)
-			{
-				$row = $db->sql_fetchrow($result);
-				$lang['Search_new'] = $lang['Search_new'] . ' (' . $row['total'] . ')';
-				$lang['New'] = $lang['New'] . ' (' . $row['total'] . ')';
-				$lang['NEW_POSTS_SHORT'] = $lang['New_Label'] . ' (' . $row['total'] . ')';
-				$lang['NEW_POSTS_LONG'] = $lang['New_Messages_Label'] . ' (' . $row['total'] . ')';
-				$lang['Search_new2'] = $lang['Search_new2'] . ' (' . $row['total'] . ')';
-				$lang['Search_new_p'] = $lang['Search_new_p'] . ' (' . $row['total'] . ')';
-				$db->sql_freeresult($result);
-			}
-		}
-		else
-		{
-			$lang['NEW_POSTS_SHORT'] = $lang['New_Label'];
-			$lang['NEW_POSTS_LONG'] = $lang['New_Messages_Label'];
-		}
 	}
 	// LOGGED IN CHECK - END
 
